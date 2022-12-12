@@ -7,7 +7,7 @@ import Response from "../utils/response";
 import SendOTPMail from "../utils/send_otp_mail";
 import JoiValidator from "../utils/joi_validator";
 
-const { OTP, Users } = models;
+const { OTP, Users, Drivers } = models;
 
 
 class OTPController {
@@ -40,7 +40,7 @@ class OTPController {
 
             //  Save OTP to the DB
             await OTP.create({
-                userEmail: value.email,
+                email: value.email,
                 otp: otp,
             });
 
@@ -69,10 +69,10 @@ class OTPController {
     };
 
     
-    //  Verify OTP.
-    static verifyOTP = async (req, res) => {
+    //  Verify User OTP.
+    static verifyUserOTP = async (req, res) => {
         try {
-            const { id } = req.params;
+            const { id } = req.requestPayload;
             const requestBody = req.body;
             // console.log(requestBody);
 
@@ -90,9 +90,9 @@ class OTPController {
 
             //  Find the user.
             const foundOTP = await OTP.findOne({
-                where: { userEmail: email, otp },
+                where: { email, otp },
             });
-            console.log("VALIDATED::: ", foundOTP);
+            // console.log("VALIDATED::: ", foundOTP);
             if (foundOTP === null) {
                 const response = new Response(
                     false,
@@ -116,14 +116,14 @@ class OTPController {
 
             //  Delete the Users OTP.
             await OTP.destroy({
-                where: { userEmail: email }
+                where: { email }
             });
 
             //  Fetch the user.
             const user = await Users.findOne({
                 where: { id },
                 attributes: {
-                    exclude: ["password", "pictureId"]
+                    exclude: ["password"]
                 }
             });
             const { name, phone, role } = user;
@@ -142,6 +142,92 @@ class OTPController {
             );
             return res.status(response.code).json(response);
             
+        } catch (error) {
+            console.log(`ERROR::: ${error}`);
+
+            const response = new Response(
+                false,
+                500,
+                'Server error, please try again later.'
+            );
+            return res.status(response.code).json(response);
+        }
+    };
+
+
+    //  Verify Driver OTP.
+    static verifyDriverOTP = async (req, res) => {
+        try {
+            const { id } = req.requestPayload;
+            const requestBody = req.body;
+            // console.log(id);
+
+            //  Validate the Request Body.
+            const { error, value } = await JoiValidator.verifyOTPSchema.validate(requestBody);
+            if (error) {
+                const response = new Response(
+                    false,
+                    400,
+                    `${error.message}`
+                );
+                return res.status(response.code).json(response);
+            }
+            const { email, otp } = value;
+
+            //  Find the user.
+            const foundOTP = await OTP.findOne({
+                where: { email, otp },
+            });
+            // console.log("VALIDATED::: ", foundOTP);
+            if (foundOTP === null) {
+                const response = new Response(
+                    false,
+                    400,
+                    "The OTP is invalid, kindly request for an OTP."
+                );
+                return res.status(response.code).json(response);
+            }
+            // console.log("VALIDATED::: ", validatedOTP);
+
+            //  Update the User "isVerified" property.
+            const updatedUser = await Drivers.update({ "isVerified": true }, { where: { id , email } });
+            if (updatedUser[0] === 0) {
+                const response = new Response(
+                    false,
+                    400,
+                    "Failed to verify your account."
+                );
+                return res.status(response.code).json(response);
+            }
+
+            //  Delete the Users OTP.
+            await OTP.destroy({
+                where: { email }
+            });
+
+            //  Fetch the user.
+            const driver = await Drivers.findOne({
+                where: { id },
+                attributes: {
+                    exclude: ["password"]
+                }
+            });
+            const { name, phone } = driver;
+
+            //  Create a Token that will be passed to the response.
+            const token = jwt.sign(
+                { id, name, email, phone },
+                `${process.env.JWT_SECRET_KEY}`,
+            );
+
+            const response = new Response(
+                true,
+                200,
+                "Successfully verified your account.",
+                { ...driver.dataValues, token }
+            );
+            return res.status(response.code).json(response);
+
         } catch (error) {
             console.log(`ERROR::: ${error}`);
 

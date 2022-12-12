@@ -1,8 +1,7 @@
 'use strict';
-
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Users', {
+    await queryInterface.createTable('Drivers', {
       id: {
         allowNull: false,
         autoIncrement: false,
@@ -26,6 +25,21 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING
       },
+      location: {
+        allowNull: true,
+        type: Sequelize.ARRAY(Sequelize.STRING)
+      },
+      address: {
+        allowNull: true,
+        type: Sequelize.STRING
+      },
+      logisticType: {
+        allowNull: false,
+        type: Sequelize.ENUM("Truck", "Small Car", "Motor Cycle")
+      },
+      picture: {
+        type: Sequelize.STRING
+      },
       status: {
         allowNull: false,
         type: Sequelize.ENUM('Active', 'Inactive'),
@@ -35,9 +49,6 @@ module.exports = {
         allowNull: false,
         type: Sequelize.BOOLEAN,
         defaultValue: false,
-      },
-      picture: {
-        type: Sequelize.STRING
       },
       createdAt: {
         allowNull: false,
@@ -50,6 +61,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Users');
+    await queryInterface.dropTable('Drivers');
   }
 };

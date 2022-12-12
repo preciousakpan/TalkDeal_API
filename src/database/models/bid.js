@@ -4,7 +4,7 @@ import { v4 as uuidV4 } from 'uuid';
 import { Model } from 'sequelize';
 
 module.exports = (sequelize, DataTypes) => {
-  class OTP extends Model {
+  class Bid extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -14,20 +14,22 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   }
-  OTP.init({
-    email: DataTypes.STRING,
-    otp: DataTypes.STRING
+  Bid.init({
+    productId: DataTypes.UUID,
+    bidderId: DataTypes.UUID,
+    bidderName: DataTypes.STRING,
+    currentBidPrice: DataTypes.DOUBLE,
   }, {
     sequelize,
-    modelName: 'OTP',
-    tableName: 'OTP',
+    modelName: 'Bids',
+    tableName: 'Bids',
     freezeTableName: true
   });
 
   //  Before the Records will be created, let's do the following.
-  OTP.beforeCreate((otp) => {
-    otp.id = uuidV4();
+  Bid.beforeCreate((bid) => {
+    bid.id = uuidV4();
   });
 
-  return OTP;
+  return Bid;
 };

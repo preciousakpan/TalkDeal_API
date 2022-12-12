@@ -3,7 +3,7 @@
 import { Router } from 'express';
 import UsersController from "../controllers/user_controller";
 import TokenVerification from "../utils/token_verification";
-import { userProfilePictureUpload } from "../utils/image_upload"
+import { userProfilePictureUpload } from "../utils/image_upload";
 
 //  Set up Express Router.
 const userRouter = Router();
@@ -23,22 +23,8 @@ userRouter.post(
 //  Get all Users.
 userRouter.get(
     "/all_users",
-    TokenVerification.userTokenValidation,
+    // TokenVerification.userTokenValidation,
     UsersController.getAllUsers
-);
-
-//  Get all Audience.
-userRouter.get(
-    "/all_bidders",
-    TokenVerification.userTokenValidation,
-    UsersController.getAllBidders
-);
-
-//  Get all Punters.
-userRouter.get(
-    "/all_drivers",
-    TokenVerification.userTokenValidation,
-    UsersController.getAllDrivers
 );
 
 //  Get a single User.

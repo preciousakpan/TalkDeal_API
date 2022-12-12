@@ -13,8 +13,9 @@ import routes from './routes'
 
 dotenv.config();
 
-// Create the "./public/uploads/" if the do not exist.
-!fs.existsSync(`./public/uploads/`) && fs.mkdirSync(`./public/uploads/`, { recursive: true });
+// Create the "./public/images/profile_pictures" and "./public/images/products" if the do not exist.
+!fs.existsSync(`./public/images/profile_pictures`) && fs.mkdirSync(`./public/images/profile_pictures`, { recursive: true });
+!fs.existsSync(`./public/images/products`) && fs.mkdirSync(`./public/images/products`, { recursive: true });
 
 //  Public Folder.
 app.use(express.static('./public'));

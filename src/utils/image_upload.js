@@ -4,20 +4,30 @@ import multer from 'multer';
 import path from "path";
 import Response from './response';
 
-
-// Multer Storage Method.
-const storage = multer.diskStorage({
+// Multer Storage Method For Profile Pictures.
+const profilePictureStorage = multer.diskStorage({
     destination: (req, file, callback) => {
-        callback(null, './public/uploads/');
+        callback(null, "./public/images/profile_pictures");
     },
     filename: (req, file, callback) => {
-        callback(null, file.fieldname + '_' + Date.now() + '_' + 'profile_photo' + path.extname(file.originalname));
+        const { id } = req.params;  //  User ID
+        callback(null, id + '_' + 'profile_photo' + path.extname(file.originalname));
     }
 });
 
+// Multer Storage Method For Product Pictures.
+const productPictureStorage = multer.diskStorage({
+    destination: (req, file, callback) => {
+        callback(null, "./public/images/products");
+    },
+    filename: (req, file, callback) => {
+        const { id } = req.params;  //  Product ID
+        callback(null, id + "_" + file.originalname);
+    }
+});
 
 // Multer File Filter.
-const profileFilter = (req, file, callback) => {
+const imageFilter = (req, file, callback) => {
     //  Get the File Extension name.
     const extName = path.extname(file.originalname).toLowerCase();
 
@@ -25,38 +35,18 @@ const profileFilter = (req, file, callback) => {
     if (extName === ".jpg" || extName === ".jpeg" || extName === ".png") {
         return callback(null, true);
     }
-    return callback({ message: 'Error; Please select JPG, JPEG or PNG images only.' }, false);
+    return callback({ message: 'ExtensionError; Please select JPG, JPEG or PNG images only.' }, false);
 } ;
 
-// Multer File Filter.
-/**
-    const videoFilter = (req, file, callback) => {
-        //  Get the File Extension name.
-        const extName = path.extname(file.originalname).toLowerCase();
 
-        //  Allowed Extensions.
-        if (extName === ".mp4" || extName === ".avi" || extName === ".mkv") {
-            return callback(null, true);
-        }
-        return callback({ message: 'Error; Please select MP4, AVI or MKV videos only.' }, false);
-    } ;
-*/
-
-
-
-/**
- * For User Profile Picture.
-*/
-// Multer Object.
-const userUpload = multer({ 
-    storage: storage,
-    fileFilter: profileFilter,
+// Multer Object For User Profile Picture.
+const userProfileUpload = multer({
+    storage: profilePictureStorage,
+    fileFilter: imageFilter,
     limits: {fileSize: 1000 * 1000},
 }).single('profilePicture');
-
-//  Uploading User Profile Image Function.
 const userProfilePictureUpload = (req, res, next) => {
-    userUpload(req, res, (error) => {
+    userProfileUpload(req, res, (error) => {
         if(error) {
             const response = new Response(
                 false,
@@ -69,4 +59,24 @@ const userProfilePictureUpload = (req, res, next) => {
     });
 }
 
-export { userProfilePictureUpload  };
+// Multer Object For Product Images.
+const productUpload = multer({
+    storage: productPictureStorage,
+    fileFilter: imageFilter,
+    limits: { fileSize: 1024 * 1024 },
+}).array('productImages', 4);
+const productImageUpload = (req, res, next) => {
+    productUpload(req, res, (error) => {
+        if(error) {
+            const response = new Response(
+                false,
+                410,
+                (error.message) ? `Error: ${error.message}` : error
+            );
+            return res.status(response.code).json(response);
+        }
+        return next();
+    });
+}
+
+export { userProfilePictureUpload, productImageUpload  };

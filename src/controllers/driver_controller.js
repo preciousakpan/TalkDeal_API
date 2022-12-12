@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import jwt from "jsonwebtoken";
 import bCrypt from "bcryptjs";
@@ -8,17 +8,19 @@ import JoiValidator from "../utils/joi_validator";
 import Response from "../utils/response";
 import SendOTPMail from "../utils/send_otp_mail";
 
-const { Users, OTP } = models;
+const { Drivers, OTP } = models;
 
-class UsersController {
 
-    //  Users SignUp.
-    static signUpUser = async (req, res) => {
+class DriverController {
+
+    //  Drivers SignUp.
+    static signUpDriver = async (req, res) => {
         try {
             const requestBody = req.body;
+            // console.log("DRIVERS DATA::: ", value);
 
             //  Validate the Request Body.
-            const { error, value } = JoiValidator.usersSchema.validate(requestBody);
+            const { error, value } = JoiValidator.driversSchema.validate(requestBody);
             if (error) {
                 const response = new Response(
                     false,
@@ -28,8 +30,8 @@ class UsersController {
                 return res.status(response.code).json(response);
             }
 
-            //  Check if User already exist and create a new Users.
-            const [user, created] = await Users.findOrCreate({
+            //  Check if Driver already exist and create a new Drivers.
+            const [driver, created] = await Drivers.findOrCreate({
                 where: { email: value.email },
                 defaults: { ...value }
             });
@@ -37,11 +39,11 @@ class UsersController {
                 const response = new Response(
                     false,
                     409,
-                    "User already registered. Kindly login with your credentials."
+                    "Driver already registered. Kindly login with your credentials."
                 );
                 return res.status(response.code).json(response);
             }
-            const { id, name, email, phone } = user;
+            const { id, name, email, phone } = driver;
 
             // Generate a Six digits token.
             const otp = otpGenerator.generate(6, {
@@ -59,7 +61,7 @@ class UsersController {
             });
 
 
-            //  Send OTP to users mail.
+            //  Send OTP to drivers mail.
             await SendOTPMail.sendMail(name, email, otp);
             // const emailResponse = await SendOTPMail.sendMail(name, email, otp);
             // console.log("EMAIL RESPONSE::: ", emailResponse.response);
@@ -70,17 +72,15 @@ class UsersController {
                 `${process.env.JWT_SECRET_KEY}`,
             );
 
-            //  Now remove the "password" before returning the User.
-            const userDataValues = user.dataValues;
-            // delete userDataValues.password;
-            // delete userDataValues.pictureId;
+            //  Now remove the "password" before returning the Driver.
+            const driverDataValues = driver.dataValues;
 
 
             const response = new Response(
                 true,
                 201,
                 "Successfully registered. Kindly check your email for your OTP.",
-                { ...userDataValues, token }
+                { ...driverDataValues, token }
             );
             return res.status(response.code).json(response);
 
@@ -96,14 +96,14 @@ class UsersController {
         }
     };
 
-    //  User Login.
-    static loginUser = async (req, res) => {
+    //  Driver Login.
+    static loginDriver = async (req, res) => {
         try {
             const requestBody = req.body;
             // console.log(requestBody);
 
             //  Validate the Request Body.
-            const { error, value } = JoiValidator.usersLoginSchema.validate(requestBody);
+            const { error, value } = JoiValidator.driversLoginSchema.validate(requestBody);
             if (error) {
                 const response = new Response(
                     false,
@@ -113,11 +113,11 @@ class UsersController {
                 return res.status(response.code).json(response);
             }
 
-            //  Find the user.
-            const user = await Users.findOne({
+            //  Find the driver.
+            const driver = await Drivers.findOne({
                 where: { email: value.email },
             });
-            if (!user) {
+            if (!driver) {
                 const response = new Response(
                     false,
                     404,
@@ -125,10 +125,10 @@ class UsersController {
                 );
                 return res.status(response.code).json(response);
             }
-            const { id, name, email, phone, role } = user;
+            const { id, name, email, phone } = driver;
 
             //  Compare the encrypted password.
-            const isPasswordMatched = bCrypt.compareSync(value.password, user.password);
+            const isPasswordMatched = bCrypt.compareSync(value.password, driver.password);
             if (!isPasswordMatched) {
                 const response = new Response(
                     false,
@@ -140,21 +140,21 @@ class UsersController {
 
             //  Create a Token that will be passed to the response.
             const token = jwt.sign(
-                { id, name, email, phone, role },
+                { id, name, email, phone },
                 `${process.env.JWT_SECRET_KEY}`,
             );
 
-            //  Now remove the "password" before returning the User.
-            const userDataValues = user.dataValues;
-            delete userDataValues.password;
+            //  Now remove the "password" before returning the Driver.
+            const driverDataValues = driver.dataValues;
+            delete driverDataValues.password;
 
-            //  Check if user is verified.
-            /*if (user.isVerified === false) {
+            //  Check if driver is verified.
+            /*if (driver.isVerified === false) {
                 const response = new Response(
                     true,
                     200,
                     "Account is not verified. Kindly check your email for your OTP.",
-                    { ...userDataValues, token }
+                    { ...driverDataValues, token }
                 );
                 return res.status(response.code).json(response);
             }*/
@@ -163,7 +163,7 @@ class UsersController {
                 true,
                 200,
                 "You're logged in successfully.",
-                { ...userDataValues, token }
+                { ...driverDataValues, token }
             );
             return res.status(response.code).json(response);
 
@@ -179,19 +179,19 @@ class UsersController {
         }
     };
 
-    //  Get all Users.
-    static getAllUsers = async (req, res) => {
+    //  Get all Drivers.
+    static getAllDrivers = async (req, res) => {
         try {
-            const users = await Users.findAll({
+            const drivers = await Drivers.findAll({
                 attributes: {
                     exclude: ["password"]
                 }
             });
-            if (!users.length) {
+            if (!drivers.length) {
                 const response = new Response(
                     false,
                     404,
-                    "No user found."
+                    "No driver found."
                 );
                 return res.status(response.code).json(response);
             }
@@ -199,8 +199,8 @@ class UsersController {
             const response = new Response(
                 true,
                 200,
-                'Users retrieved successfully.',
-                users
+                'Drivers retrieved successfully.',
+                drivers
             );
             return res.status(response.code).json(response);
 
@@ -216,22 +216,22 @@ class UsersController {
         }
     };
 
-    //  Get a single User.
-    static getSingleUser = async (req, res) => {
+    //  Get a single Driver.
+    static getSingleDriver = async (req, res) => {
         try {
             const { id } = req.params;
 
-            const user = await Users.findOne({
+            const driver = await Drivers.findOne({
                 where: { id },
                 attributes: {
                     exclude: ["password"]
                 }
             });
-            if (!user) {
+            if (!driver) {
                 const response = new Response(
                     false,
                     404,
-                    "User does not exist."
+                    "Driver does not exist."
                 );
                 return res.status(response.code).json(response);
             }
@@ -239,8 +239,8 @@ class UsersController {
             const response = new Response(
                 true,
                 200,
-                'User retrieved successfully.',
-                user
+                'Driver retrieved successfully.',
+                driver
             );
             return res.status(response.code).json(response);
 
@@ -256,15 +256,15 @@ class UsersController {
         }
     };
 
-    //  Update a User.
-    static updateUser = async (req, res) => {
+    //  Update a Driver.
+    static updateDriver = async (req, res) => {
         try {
             const { id } = req.params;
             const requestBody = req.body;
             // console.log(requestBody);
 
             //  Validate the Request Body.
-            const { error, value } = JoiValidator.usersUpdateSchema.validate(requestBody);
+            const { error, value } = JoiValidator.driversUpdateSchema.validate(requestBody);
             if (error) {
                 const response = new Response(
                     false,
@@ -275,31 +275,31 @@ class UsersController {
             }
 
             if (value.email) {
-                const foundUser = await Users.findOne({
+                const foundDriver = await Drivers.findOne({
                     where: { id }
                 });
 
-                //  First check if the user Email is changed, then resend verification mail.
-                if (foundUser.email !== value.email) {
-                    const updatedUser = await Users.update({ ...value, isVerified: false }, { where: { id } });
-                    if (updatedUser[0] === 0) {
+                //  First check if the driver Email is changed, then resend verification mail.
+                if (foundDriver.email !== value.email) {
+                    const updatedDriver = await Drivers.update({ ...value, isVerified: false }, { where: { id } });
+                    if (updatedDriver[0] === 0) {
                         const response = new Response(
                             false,
                             400,
-                            "Failed to update user."
+                            "Failed to update driver."
                         );
                         return res.status(response.code).json(response);
                     }
 
 
-                    //  Get the user back.
-                    const user = await Users.findOne({
+                    //  Get the driver back.
+                    const driver = await Drivers.findOne({
                         where: { id },
                         attributes: {
                             exclude: ["password"]
                         }
                     });
-                    const { name, email, phone, role } = user;
+                    const { name, email, phone } = driver;
 
                     // Generate a Six digits token.
                     const otp = otpGenerator.generate(6, {
@@ -312,12 +312,12 @@ class UsersController {
 
                     //  Save OTP to the DB
                     await OTP.create({
-                        userEmail: email,
+                        driverEmail: email,
                         otp: otp,
                     });
 
 
-                    //  Send OTP to users mail.
+                    //  Send OTP to drivers mail.
                     await SendOTPMail.sendMail(name, email, otp);
                     // const emailResponse = await SendOTPMail.sendMail(name, email, otp);
                     // console.log("EMAIL RESPONSE::: ", emailResponse);
@@ -333,7 +333,7 @@ class UsersController {
                         true,
                         200,
                         "Successfully updated. Kindly check your email for your OTP verification.",
-                        { ...user.dataValues, token }
+                        { ...driver.dataValues, token }
                     );
                     return res.status(response.code).json(response);
                 }
@@ -342,24 +342,24 @@ class UsersController {
                 return;
             }
 
-            const updatedUser = await Users.update({ ...value }, { where: { id } });
-            if (updatedUser[0] === 0) {
+            const updatedDriver = await Drivers.update({ ...value }, { where: { id } });
+            if (updatedDriver[0] === 0) {
                 const response = new Response(
                     false,
                     400,
-                    "Failed to update user."
+                    "Failed to update driver."
                 );
                 return res.status(response.code).json(response);
             }
 
-            //  Get the user back.
-            const user = await Users.findOne({
+            //  Get the driver back.
+            const driver = await Drivers.findOne({
                 where: { id },
                 attributes: {
                     exclude: ["password"]
                 }
             });
-            const { name, email, phone, role } = user;
+            const { name, email, phone, role } = driver;
 
             //  Create a Token that will be passed to the response.
             const token = jwt.sign(
@@ -371,7 +371,7 @@ class UsersController {
                 true,
                 200,
                 "Account updated successfully.",
-                { ...user.dataValues, token }
+                { ...driver.dataValues, token }
             );
             return res.status(response.code).json(response);
 
@@ -387,19 +387,19 @@ class UsersController {
         }
     };
 
-    //  Delete a User.
-    static deleteUser = async (req, res) => {
+    //  Delete a Driver.
+    static deleteDriver = async (req, res) => {
         try {
             const { id } = req.params;
 
-            const isDeleted = await Users.destroy({
+            const isDeleted = await Drivers.destroy({
                 where: { id }
             });
             if (isDeleted !== 1) {
                 const response = new Response(
                     false,
                     404,
-                    "No user found."
+                    "No driver found."
                 );
                 return res.status(response.code).json(response);
             }
@@ -407,7 +407,7 @@ class UsersController {
             const response = new Response(
                 true,
                 200,
-                "User deleted successfully."
+                "Driver deleted successfully."
             );
             return res.status(response.code).json(response);
 
@@ -423,20 +423,20 @@ class UsersController {
         }
     };
 
-    //  Upload Users Profile Picture.
-    static uploadUserProfilePicture = async (req, res) => {
+    //  Upload Driver's Profile Picture.
+    static uploadDriverProfilePicture = async (req, res) => {
         try {
             const { id } = req.requestPayload;
             const filename = req.file.filename;
             const avatarURL = `http://${req.headers.host}/images/profile_pictures/${filename}`;
-            console.log(req.file);
+            // console.log(req.file);
 
-            //  Update the Users Profile Picture..
-            const updatedUser = await Users.update(
+            //  Update the Drivers Profile Picture..
+            const updatedDriver = await Drivers.update(
                 { picture: avatarURL },
                 { where: { id } }
             );
-            if (updatedUser[0] === 0) {
+            if (updatedDriver[0] === 0) {
                 const response = new Response(
                     false,
                     400,
@@ -445,19 +445,19 @@ class UsersController {
                 return res.status(response.code).json(response);
             }
 
-            //  Get the user back.
-            const user = await Users.findOne({
+            //  Get the driver back.
+            const driver = await Drivers.findOne({
                 where: { id },
                 attributes: {
                     exclude: ["password"]
                 }
             });
-            const { name, email, phone, role } = user;
+            const { name, email, phone } = driver;
 
 
             //  Create a Token that will be passed to the response.
             const token = jwt.sign(
-                { id, name, email, phone, role },
+                { id, name, email, phone },
                 `${process.env.JWT_SECRET_KEY}`,
             );
 
@@ -465,7 +465,7 @@ class UsersController {
                 true,
                 200,
                 'Successfully created a doctor.',
-                { ...user.dataValues, token }
+                { ...driver.dataValues, token }
             );
             return res.status(response.code).json(response);
 
@@ -482,5 +482,4 @@ class UsersController {
     };
 }
 
-
-export default UsersController;
+export default DriverController;

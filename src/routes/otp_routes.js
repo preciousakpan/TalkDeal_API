@@ -10,14 +10,22 @@ const otpRouter = Router();
 //  Send OTP.
 otpRouter.post(
     "/send_otp",
+    TokenVerification.userTokenValidation,
     OTPController.sendOTPMail
 );
 
-//  Verify OTP.
+//  Verify User OTP.
 otpRouter.post(
-    "/verify_otp/:id",
+    "/verify_user_otp/:id",
     TokenVerification.userTokenValidation,
-    OTPController.verifyOTP
+    OTPController.verifyUserOTP
+);
+
+//  Verify Driver OTP.
+otpRouter.post(
+    "/verify_driver_otp",
+    TokenVerification.driverTokenVerification,
+    OTPController.verifyDriverOTP
 );
 
 

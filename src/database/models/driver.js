@@ -5,7 +5,7 @@ import bCrypt from 'bcryptjs';
 import { Model } from 'sequelize';
 
 module.exports = (sequelize, DataTypes) => {
-  class User extends Model {
+  class Driver extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -15,35 +15,39 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   }
-  User.init({
+  Driver.init({
     name: DataTypes.STRING,
     email: DataTypes.STRING,
     phone: DataTypes.STRING,
     password: DataTypes.STRING,
-    status: DataTypes.ENUM('Active', 'Inactive'),
-    isVerified: DataTypes.BOOLEAN,
+    location: DataTypes.ARRAY(DataTypes.STRING),
+    address: DataTypes.STRING,
+    logisticType: DataTypes.ENUM("Truck", "Small Car", "Motor Cycle"),
     picture: DataTypes.STRING,
+    status: DataTypes.ENUM('Active', 'Inactive'),
+    isVerified: DataTypes.BOOLEAN
   }, {
     sequelize,
-    modelName: 'Users',
-    tableName: 'Users',
+    modelName: 'Drivers',
+    tableName: 'Drivers',
     freezeTableName: true
   });
 
   //  Before the Records will be created, let's d the following.
-  User.beforeCreate((user) => {
-    user.id = uuidV4();
+  Driver.beforeCreate((driver) => {
+    driver.id = uuidV4();
   });
-  User.beforeCreate((user) => {
-    user.password = bCrypt.hashSync(user.password, 10);
+  Driver.beforeCreate((driver) => {
+    driver.password = bCrypt.hashSync(driver.password, 10);
   });
-  User.beforeUpdate((user) => {
-    user.password = bCrypt.hashSync(user.password, 10);
+  Driver.beforeUpdate((driver) => {
+    driver.password = bCrypt.hashSync(driver.password, 10);
   });
 
   //  After the record is persisted and before the persisted data are returned, let's remove the "password".
-  User.afterCreate((user) => {
-    delete user.dataValues.password
+  Driver.afterCreate((driver) => {
+    delete driver.dataValues.password
   });
-  return User;
+
+  return Driver;
 };

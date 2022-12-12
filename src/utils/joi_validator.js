@@ -4,6 +4,8 @@ import Joi from 'joi';
 
 const role = ['Admin', 'Bidder', 'Driver'];
 const status = ['Active', 'Inactive'];
+const categories = ["All Categories", "Computing", "Electronics", "Sporting", "Phones & Tablets", "Toys", "Fashion", "Home & Office", "Automobile", "Health & Beauty", "Babies"];
+const logisticType = ["Truck", "Small Car", "Motor Cycle"];
 
 class JoiValidator {
 
@@ -12,14 +14,11 @@ class JoiValidator {
     //  Users Validation Schema.
     static usersSchema = Joi.object({
         name: Joi.string().required().min(3),
-        phone: Joi.string(),
         email: Joi.string().required().email(),
-        address: Joi.string(),
-        role: Joi.string().required().valid(...role),
-        status: Joi.string().required().valid(...status),
-        isVerified: Joi.boolean().required(),
+        phone: Joi.string().required(),
+        status: Joi.string().valid(...status),
+        isVerified: Joi.boolean(),
         picture: Joi.string(),
-        pictureId: Joi.string(),
         password: Joi.string().required()
             .pattern(new RegExp('^[a-zA-Z0-9]{6,30}$'))
             .error(new Error("Password must be at least 6 characters and alphanumeric.")),
@@ -30,12 +29,9 @@ class JoiValidator {
         name: Joi.string().min(3),
         phone: Joi.string(),
         email: Joi.string().email(),
-        address: Joi.string(),
-        role: Joi.string().valid(...role),
         status: Joi.string().valid(...status),
         isVerified: Joi.boolean(),
         picture: Joi.string(),
-        pictureId: Joi.string(),
         password: Joi.string()
             .pattern(new RegExp('^[a-zA-Z0-9]{6,30}$'))
             .error(new Error("Password must be at least 6 characters and alphanumeric."))
@@ -43,6 +39,47 @@ class JoiValidator {
 
     //  User Login Validation Schema.
     static usersLoginSchema = Joi.object({
+        email: Joi.string().required().email(),
+        password: Joi.string().required()
+    });
+
+
+    /*=====================================================================================*/
+    /*=================================== FOR USERS =====================================*/
+    //  Driver Validation Schema.
+    static driversSchema = Joi.object({
+        name: Joi.string().required().min(3),
+        email: Joi.string().required().email(),
+        phone: Joi.string().required(),
+        location:Joi.array().items(Joi.string()),
+        address: Joi.string(),
+        logisticType: Joi.string().valid(...logisticType),
+        picture: Joi.string(),
+        status: Joi.string().valid(...status),
+        isVerified: Joi.boolean(),
+        password: Joi.string().required()
+            .pattern(new RegExp('^[a-zA-Z0-9]{6,30}$'))
+            .error(new Error("Password must be at least 6 characters and alphanumeric.")),
+    });
+
+    //  Driver Update Validation Schema.
+    static driversUpdateSchema = Joi.object({
+        name: Joi.string().min(3),
+        email: Joi.string().email(),
+        phone: Joi.string(),
+        location:Joi.array().items(Joi.string()),
+        address: Joi.string(),
+        logisticType: Joi.string().valid(...logisticType),
+        picture: Joi.string(),
+        status: Joi.string().valid(...status),
+        isVerified: Joi.boolean(),
+        password: Joi.string()
+            .pattern(new RegExp('^[a-zA-Z0-9]{6,30}$'))
+            .error(new Error("Password must be at least 6 characters and alphanumeric.")),
+    });
+
+    //  User Login Validation Schema.
+    static driversLoginSchema = Joi.object({
         email: Joi.string().required().email(),
         password: Joi.string().required()
     });
@@ -64,42 +101,48 @@ class JoiValidator {
     
 
     /*=====================================================================================*/
-    /*=================================== FOR PODCAST =====================================*/
-    //  Podcasts Validation Schema.
-    static podcastsSchema = Joi.object({
-        title: Joi.string().required().min(3),
-        contestantA: Joi.string().allow(''),
-        contestantB: Joi.string().allow(''),
-        sportsName: Joi.string().required().min(3),
-        leagueName: Joi.string().required().min(3),
-        leagueAbbrev: Joi.string(),
-        duration: Joi.string().required(),
-        punters: Joi.string().required(),
-        // featuredVideoFile: Joi.string(),
-        // featuredImageFile: Joi.string(),
+    /*=================================== FOR PRODUCT =====================================*/
+    //  Product Validation Schema.
+    static productSchema = Joi.object({
+        name: Joi.string().required().min(3),
+        category: Joi.string().required().valid(...categories),
+        initialPrice: Joi.number().required(),
+        finalPrice: Joi.number(),
+        count: Joi.number().required(),
+        weight: Joi.number().required(),
+        state: Joi.string().required(),
+        city: Joi.string().required(),
+        description: Joi.string().required(),
+        ownerId: Joi.string().required(),
+        dueDate: Joi.date().required(),
+        images: Joi.array(),
     });
 
     //  Podcasts Update Validation Schema.
-    static podcastsUpdateSchema = Joi.object({
-        title: Joi.string().required().min(3),
-        contestantA: Joi.string().allow(''),
-        contestantB: Joi.string().allow(''),
-        sportsName: Joi.string().min(3),
-        leagueName: Joi.string().min(3),
-        leagueAbbrev: Joi.string(),
-        duration: Joi.string(),
-        punters: Joi.string(),
-        // featuredVideoFile: Joi.string(),
-        // featuredImageFile: Joi.string(),
+    static productUpdateSchema = Joi.object({
+        name: Joi.string().min(3),
+        category: Joi.string().valid(...categories),
+        initialPrice: Joi.number(),
+        finalPrice: Joi.number(),
+        count: Joi.number(),
+        weight: Joi.string(),
+        state: Joi.string(),
+        city: Joi.string(),
+        description: Joi.string(),
+        ownerId: Joi.string(),
+        dueDate: Joi.date(),
+        images: Joi.array(),
     });
     
 
     /*=====================================================================================*/
-    /*=================================== FOR LIKES =====================================*/
-    //  Like Validation Schema.
-    static likesSchema = Joi.object({
-        podcastId: Joi.string().required(),
-        userId: Joi.string().required(),
+    /*=================================== FOR BIDS =====================================*/
+    //  Bid Validation Schema.
+    static bidSchema = Joi.object({
+        productId: Joi.string().required(),
+        bidderId: Joi.string().required(),
+        bidderName: Joi.string().required(),
+        currentBidPrice: Joi.number().required(),
     });
     
 

@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('OTP', {
+    await queryInterface.createTable('Bids', {
       id: {
         allowNull: false,
         autoIncrement: false,
@@ -9,13 +9,21 @@ module.exports = {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4
       },
-      email: {
+      productId: {
         allowNull: false,
-        type: Sequelize.STRING
+        type: Sequelize.UUID,
       },
-      otp: {
+      bidderId: {
         allowNull: false,
-        type: Sequelize.STRING
+        type: Sequelize.UUID,
+      },
+      bidderName: {
+        allowNull: false,
+        type: Sequelize.STRING,
+      },
+      currentBidPrice: {
+        allowNull: false,
+        type: Sequelize.DOUBLE,
       },
       createdAt: {
         allowNull: false,
@@ -28,6 +36,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('OTP');
+    await queryInterface.dropTable('Bids');
   }
 };
