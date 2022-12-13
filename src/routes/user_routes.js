@@ -23,7 +23,7 @@ userRouter.post(
 //  Get all Users.
 userRouter.get(
     "/all_users",
-    // TokenVerification.userTokenValidation,
+    TokenVerification.userTokenValidation,
     UsersController.getAllUsers
 );
 

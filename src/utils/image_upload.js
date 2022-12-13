@@ -10,7 +10,7 @@ const profilePictureStorage = multer.diskStorage({
         callback(null, "./public/images/profile_pictures");
     },
     filename: (req, file, callback) => {
-        const { id } = req.params;  //  User ID
+        const { id } = req.requestPayload;  //  User ID
         callback(null, id + '_' + 'profile_photo' + path.extname(file.originalname));
     }
 });
