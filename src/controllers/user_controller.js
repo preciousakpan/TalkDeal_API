@@ -429,7 +429,7 @@ class UsersController {
             const { id } = req.requestPayload;
             const filename = req.file.filename;
             const avatarURL = `http://${req.headers.host}/images/profile_pictures/${filename}`;
-            console.log(req.file);
+            console.log("FILE::: ", req.file);
 
             //  Update the Users Profile Picture..
             const updatedUser = await Users.update(

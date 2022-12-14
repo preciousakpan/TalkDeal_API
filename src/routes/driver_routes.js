@@ -50,8 +50,8 @@ driverRouter.delete(
 );
 
 //  Upload Driver's Profile Picture.
-driverRouter.post(
-    "/upload_driver_picture/:id",
+driverRouter.put(
+    "/upload_driver_picture",
     TokenVerification.driverTokenVerification,
     userProfilePictureUpload,
     DriverController.uploadDriverProfilePicture

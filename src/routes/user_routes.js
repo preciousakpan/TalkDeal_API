@@ -49,7 +49,7 @@ userRouter.delete(
 );
 
 //  Uploading Users Profile Picture.
-userRouter.post(
+userRouter.put(
     "/upload_user_picture",
     TokenVerification.userTokenValidation,
     userProfilePictureUpload,
