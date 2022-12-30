@@ -14,6 +14,7 @@ const profilePictureStorage = multer.diskStorage({
         callback(null, id + '_' + 'profile_photo' + path.extname(file.originalname));
     }
 });
+//http://talkdeal-api.onrender.com/images/profile_pictures/f60c62cd-4a1f-49a5-9248-546bad9b9c6d_profile_photo.png
 
 // Multer Storage Method For Product Pictures.
 const productPictureStorage = multer.diskStorage({

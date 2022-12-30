@@ -429,7 +429,7 @@ class DriverController {
             const { id } = req.requestPayload;
             const filename = req.file.filename;
             const avatarURL = `http://${req.headers.host}/images/profile_pictures/${filename}`;
-            // console.log(req.file);
+            // console.log("IMAGE FILE:::", req.file);
 
             //  Update the Drivers Profile Picture..
             const updatedDriver = await Drivers.update(
@@ -464,7 +464,7 @@ class DriverController {
             const response = new Response(
                 true,
                 200,
-                'Successfully created a doctor.',
+                'Successfully uploaded drivers image.',
                 { ...driver.dataValues, token }
             );
             return res.status(response.code).json(response);

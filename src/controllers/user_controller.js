@@ -8,7 +8,7 @@ import JoiValidator from "../utils/joi_validator";
 import Response from "../utils/response";
 import SendOTPMail from "../utils/send_otp_mail";
 
-const { Users, OTP } = models;
+const { Users, OTP, Wallets } = models;
 
 class UsersController {
 
@@ -43,6 +43,12 @@ class UsersController {
             }
             const { id, name, email, phone } = user;
 
+            //  Create a Wallet.
+            const wallet = await Wallets.create({
+                userId: id,
+                amount: 0.0,
+            });
+
             // Generate a Six digits token.
             const otp = otpGenerator.generate(6, {
                 digits: true,
@@ -70,17 +76,26 @@ class UsersController {
                 `${process.env.JWT_SECRET_KEY}`,
             );
 
-            //  Now remove the "password" before returning the User.
-            const userDataValues = user.dataValues;
-            // delete userDataValues.password;
-            // delete userDataValues.pictureId;
-
+            //  Get the user back.
+            const returnedUser = await Users.findOne({
+                where: { id },
+                attributes: {
+                    exclude: ["password"]
+                },
+                include: {
+                    model: Wallets,
+                    as: "wallet",
+                    attributes: {
+                        exclude: ["userId", "createdAt", "updatedAt"]
+                    }
+                }
+            });
 
             const response = new Response(
                 true,
                 201,
                 "Successfully registered. Kindly check your email for your OTP.",
-                { ...userDataValues, token }
+                { ...returnedUser.dataValues, token }
             );
             return res.status(response.code).json(response);
 
@@ -116,6 +131,13 @@ class UsersController {
             //  Find the user.
             const user = await Users.findOne({
                 where: { email: value.email },
+                include: {
+                    model: Wallets,
+                    as: "wallet",
+                    attributes: {
+                        exclude: ["userId", "createdAt", "updatedAt"]
+                    }
+                }
             });
             if (!user) {
                 const response = new Response(
@@ -225,6 +247,13 @@ class UsersController {
                 where: { id },
                 attributes: {
                     exclude: ["password"]
+                },
+                include: {
+                    model: Wallets,
+                    as: "wallet",
+                    attributes: {
+                        exclude: ["userId", "createdAt", "updatedAt"]
+                    }
                 }
             });
             if (!user) {

@@ -10,6 +10,7 @@ import  { app, server } from './config/expressSetup';
 // import SocketIOController from "./controllers/socketIO_controller";
 import Response from './utils/response';
 import routes from './routes'
+import CronTaskController from "./controllers/cronTask_controller";
 
 dotenv.config();
 
@@ -56,6 +57,9 @@ app.get('/', (req, res) => {
 
 //  Create other Routes.
 app.use('/api/v1', routes);
+
+//  Call the Cron Task Module.
+CronTaskController.checkProductWonCronTask();
 
 
 const PORT = process.env.PORT || 5000;

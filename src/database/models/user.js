@@ -13,6 +13,11 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      User.hasOne(models.Wallets, {
+        as: "wallet",
+        foreignKey: "userId",
+        onDelete: "CASCADE"
+      });
     }
   }
   User.init({

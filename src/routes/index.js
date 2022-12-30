@@ -8,6 +8,9 @@ import driverRouter from "./driver_routes";
 import otpRouter from "./otp_routes";
 import productRouter from "./product_routes";
 import bidRouter from "./bid_routes";
+import payStackRouter from "./payStack_routes";
+import walletRouter from "./wallet_routes";
+import transactionRouter from "./transaction_routes";
 
 
 
@@ -19,5 +22,8 @@ router.use('/drivers', driverRouter);
 router.use('/otp', otpRouter);
 router.use('/products', productRouter);
 router.use('/bids', bidRouter);
+router.use('/paystack', payStackRouter);
+router.use('/wallets', walletRouter);
+router.use('/transactions', transactionRouter);
 
 export default router;
