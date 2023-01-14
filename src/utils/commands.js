@@ -11,7 +11,6 @@
 
 
 /*
-"migrate": "npx sequelize db:migrate",
-    "undo-migrate": "npx sequelize db:migrate:undo:all",
-    "postbuild": "npm run migrate",
+npm uninstall -g babel
+2023-01-14T15:08:03.402807+00:00 app[web.1]:     npm install --save-dev babel-cli
 * */
