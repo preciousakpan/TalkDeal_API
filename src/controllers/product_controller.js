@@ -2,6 +2,7 @@ import { promises as fs } from "fs";
 import models from "../database/models";
 import Response from "../utils/response";
 import JoiValidator from "../utils/joi_validator";
+import { Op } from "sequelize";
 
 const { Products } = models;
 
@@ -61,7 +62,13 @@ class ProductController {
     //  Get all Products.
     static getAllProducts = async (req, res) => {
         try {
-            const products = await Products.findAll();
+            const products = await Products.findAll({
+                where: {
+                    dueDate: {
+                        [Op.lt]: new Date(),
+                    }
+                }
+            });
             if (!products.length) {
                 const response = new Response(
                     false,

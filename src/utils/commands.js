@@ -7,3 +7,11 @@
 "npx sequelize-cli db:migrate"
 
 "npx sequelize-cli db:seed:all"
+
+
+
+/*
+"migrate": "npx sequelize db:migrate",
+    "undo-migrate": "npx sequelize db:migrate:undo:all",
+    "postbuild": "npm run migrate",
+* */

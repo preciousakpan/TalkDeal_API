@@ -1,3 +1,5 @@
+"use strict";
+
 import models from "../database/models";
 import JoiValidator from "../utils/joi_validator";
 import Response from "../utils/response";
@@ -120,7 +122,7 @@ class BidController {
         }
     };
 
-    //  Get all Products.
+    //  Get all Product Bids.
     static getProductBids = async (req, res) => {
         try {
             const { id } = req.params;
@@ -130,6 +132,7 @@ class BidController {
                 order: [
                     ['currentBidPrice', 'DESC'],
                 ],
+                limit: 1,
             });
             if (!bids.length) {
                 const response = new Response(

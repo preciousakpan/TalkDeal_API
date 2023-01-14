@@ -5,13 +5,13 @@ import models from "../database/models";
 import Response from "../utils/response";
 import JoiValidator from "../utils/joi_validator";
 
-const { Products } = models;
+const { Bids, Carts, Products } = models;
 
 class CronTaskController {
 
     static checkProductWonCronTask = () => {
         // Schedule tasks to be run on the server.
-        return nodeCron.schedule("*/10 * * * * *", async (req, res) => {
+        return nodeCron.schedule("* * * * *", async (req, res) => {
             // console.log("Running this task Every 10 Seconds...");
 
             const currentDateTime = new Date();
@@ -29,9 +29,30 @@ class CronTaskController {
                 }
 
                 products.map(async (eachProduct) => {
-                    if (currentDateTime > new Date(eachProduct.dueDate)) {
+                    if (currentDateTime > new Date(eachProduct.dueDate) && eachProduct.status === "Available") {
                         //  Update a Product.
                         await Products.update({ status: "Not Available" }, { where: { id: eachProduct.id } });
+
+                        //  Check the Bid table and check the highest bid for that Product.
+                        const bids = await Bids.findAll({
+                            where: { productId: eachProduct.id },
+                            order: [
+                                ['currentBidPrice', 'DESC'],
+                            ],
+                            limit: 1,
+                        });
+                        const bid = bids[0].dataValues;
+
+                        const newCart = {
+                            productId: bid.productId,
+                            bidderId: bid.bidderId,
+                            bidderName: bid.bidderName,
+                            currentBidPrice: bid.currentBidPrice,
+                        }
+                        console.log(newCart);
+
+                        //  Create a Cart.
+                        const cart = await Carts.create({ ...newCart });
                     }
                 });
 
