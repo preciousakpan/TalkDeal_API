@@ -18,46 +18,50 @@ class CronTaskController {
             //  Get all Products.
             try {
                 const products = await Products.findAll();
-                if (!products.length) {
+                /*console.log(`RESPONSE::: ${products.length}`);
+                if (products.length === 0) {
                     console.log("No product found.");
                     const response = new Response(
                         false,
                         404,
                         "No product found."
                     );
-                    return res.status(response.code).json(response);
-                }
+                    return console.log("No product found.");
+                }*/
 
-                products.map(async (eachProduct) => {
-                    if (currentDateTime > new Date(eachProduct.dueDate) && eachProduct.status === "Available") {
-                        //  Update a Product.
-                        await Products.update({ status: "Not Available" }, { where: { id: eachProduct.id } });
+                (products.length !== 0) && (
+                    products.map(async (eachProduct) => {
+                        if (currentDateTime > new Date(eachProduct.dueDate) && eachProduct.status === "Available") {
+                            //  Update a Product.
+                            await Products.update({ status: "Not Available" }, { where: { id: eachProduct.id } });
 
-                        //  Check the Bid table and check the highest bid for that Product.
-                        const bids = await Bids.findAll({
-                            where: { productId: eachProduct.id },
-                            order: [
-                                ['currentBidPrice', 'DESC'],
-                            ],
-                            limit: 1,
-                        });
-                        const bid = bids[0].dataValues;
+                            //  Check the Bid table and get the highest bid for that Product.
+                            const bids = await Bids.findAll({
+                                where: { productId: eachProduct.id },
+                                order: [
+                                    ['currentBidPrice', 'DESC'],
+                                ],
+                                limit: 1,
+                            });
+                            const bid = bids[0].dataValues;
 
-                        const newCart = {
-                            productId: bid.productId,
-                            bidderId: bid.bidderId,
-                            bidderName: bid.bidderName,
-                            currentBidPrice: bid.currentBidPrice,
+                            const newCart = {
+                                productId: bid.productId,
+                                bidderId: bid.bidderId,
+                                bidderName: bid.bidderName,
+                                currentBidPrice: bid.currentBidPrice,
+                            }
+                            console.log(newCart);
+
+                            //  Create a Cart.
+                            const cart = await Carts.create({ ...newCart });
                         }
-                        console.log(newCart);
+                    })
+                );
 
-                        //  Create a Cart.
-                        const cart = await Carts.create({ ...newCart });
-                    }
-                });
 
             } catch (error) {
-                console.log(`ERROR::: ${error}`);
+                console.log(`ERRORSSS::: ${error}`);
 
                 const response = new Response(
                     false,

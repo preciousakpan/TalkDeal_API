@@ -65,7 +65,7 @@ class ProductController {
             const products = await Products.findAll({
                 where: {
                     dueDate: {
-                        [Op.lt]: new Date(),
+                        [Op.gt]: new Date(),
                     }
                 }
             });
